@@ -1,0 +1,9 @@
+2019-07-18 00:25:27{debug} [tid:0x0] [file:main.cpp] [func:main.cpp] [line:14]
+MSG:test fuction of debug....
+
+2019-07-18 00:29:56 {debug} [tid:0x0] [file:main.cpp] [func:main.cpp] [line:14]
+MSG:test fuction of debug....
+
+2019-07-18 00:30:30 {debug} [tid:0x0] [file:main.cpp] [func:main.cpp] [line:14]
+MSG:test fuction of debug....
+
