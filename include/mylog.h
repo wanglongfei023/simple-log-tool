@@ -31,7 +31,8 @@ using namespace std;
 
 #define INIT_LOG(str) Log::get_log_instance(str)
 #define LOG(level, content, expr...) \
-		Log::pGlobalLogInstance->log(level, content, (unsigned int)pthread_self(), __FILE__, __func__, __LINE__, ##expr)
+		Log::pGlobalLogInstance->log(level, content, (unsigned int)pthread_self(),\
+			   					     __FILE__, __func__, __LINE__, ##expr)
 
 class Log
 {
@@ -54,8 +55,10 @@ protected:
 
 public:
 	string get_current_time(int nType);
-	string get_format_msg(const char* pLevel, const char* pMsg, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
-	void log(const char* pLevel, const char* pMsg, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine, int nExpr = 1);
+	string get_format_msg(const char* pLevel, const char* pMsg, unsigned int nTid, 
+					      const char* pFileName, const char* pFuncName, int nLine);
+	void log(const char* pLevel, const char* pMsg, unsigned int nTid, \
+			 const char* pFileName, const char* pFuncName, int nLine, int nExpr = 1);
 	void build_symbolic_link(const char* pSrcFile, const char* pDestFile);
 	void notice(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
 	void warning(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
