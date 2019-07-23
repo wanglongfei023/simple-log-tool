@@ -7,8 +7,6 @@
 *				function: To define a class of log for other procedures to 
 *						  debug and record import information
 *
-*			    technology: Lazy Singleton Model + Mutex 
-*
 ==========================================================================*/
 
 #include <stdlib.h>
@@ -29,7 +27,7 @@ using namespace std;
 #define DEBUG 	"debug"
 #define FATAL	"fatal"
 
-#define INIT_LOG(str) Log::get_log_instance(str)
+#define INIT_LOG(str, expr...) Log::get_log_instance(str, ##expr)
 #define LOG(level, content, expr...) \
 		Log::pGlobalLogInstance->log(level, content, (unsigned int)pthread_self(),\
 			   					     __FILE__, __func__, __LINE__, ##expr)
@@ -45,28 +43,40 @@ private:
 	FILE* m_pFatalFileHandler;
 	FILE* m_pDebugFileHandler;
 
+	bool m_bPrint;
 public:
 	static Log* pGlobalLogInstance;
 	static pthread_mutex_t m_mutexLock;
 
 protected:
-	Log(const char* pPathAndPrefix);
+	Log(const char* pPathAndPrefix, bool isPrint);
 	Log();
 
 public:
 	string get_current_time(int nType);
+
 	string get_format_msg(const char* pLevel, const char* pMsg, unsigned int nTid, 
 					      const char* pFileName, const char* pFuncName, int nLine);
+
 	void log(const char* pLevel, const char* pMsg, unsigned int nTid, \
 			 const char* pFileName, const char* pFuncName, int nLine, int nExpr = 1);
+
 	void build_symbolic_link(const char* pSrcFile, const char* pDestFile);
-	void notice(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
-	void warning(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
-	void fatal(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
-	void debug(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine);
+
+	void notice(const char* pContent, unsigned int nTid, const char* pFileName,
+		     	const char* pFuncName, int nLine);
+
+	void warning(const char* pContent, unsigned int nTid, const char* pFileName,
+		       	 const char* pFuncName, int nLine);
+
+	void fatal(const char* pContent, unsigned int nTid, const char* pFileName,
+		       const char* pFuncName, int nLine);
+
+	void debug(const char* pContent, unsigned int nTid, const char* pFileName, 
+			   const char* pFuncName, int nLine);
 
 public:
-	static Log* get_log_instance(const char* pPathAndPrefix);
+	static Log* get_log_instance(const char* pPathAndPrefix, bool isPrint = true);
 	~Log();
 };
 

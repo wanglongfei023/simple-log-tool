@@ -1,0 +1,9 @@
+2019-07-23 19:04:47 {warning} [tid:0x0] [file:main.cpp] [func:main.cpp] [line:18]
+MSG:test fuction of warning...
+
+2019-07-23 19:04:47 {warning} [tid:0x0] [file:main.cpp] [func:main.cpp] [line:19]
+MSG:test fuction of warning with right expression...
+
+2019-07-23 19:04:47 {fatal} [tid:0x0] [file:main.cpp] [func:main.cpp] [line:22]
+MSG:test fuction of fatal....
+

@@ -9,17 +9,21 @@
 #include <mylog.h>
 int main()
 {
-	INIT_LOG("../log/test");
+	INIT_LOG("../log/test", true);
 
-	LOG("debug", "test fuction of debug....");
+	try{
+		LOG("debug", "test fuction of debug....");
 
-	LOG("notice", "test fuction of notice....");
+		LOG("notice", "test fuction of notice....");
 
-	LOG("warning", "test fuction of warning...");
-	LOG("warning", "test fuction of warning with right expression...", 1 == 1);
-	LOG("warning", "test fuction of warning with wrong expression...", 1 == 2);
+		LOG("warning", "test fuction of warning...");
+		LOG("warning", "test fuction of warning with right expression...", 1 == 1);
+		LOG("warning", "test fuction of warning with wrong expression...", 1 == 2);
 
-	LOG("fatal", "test fuction of fatal....", 1 == 1);
+		LOG("fatal", "test fuction of fatal....", 1 == 1);
+	}catch(string& e){
+		cout << e << endl;
+	}
 
 	return 0;
 }

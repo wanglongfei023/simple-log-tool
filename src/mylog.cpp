@@ -29,8 +29,10 @@ Example:
 				 test.log.notice --> ../../test.log.notice.2019060509
 				 ...
 */
-Log::Log(const char* pPathAndPrefix)
+Log::Log(const char* pPathAndPrefix, bool isPrint)
 {
+	m_bPrint = isPrint;
+
 	string strPathAndPrefix = string(pPathAndPrefix);
 	int nIndexOfPrefix = strPathAndPrefix.find_last_of('/');
 	string strPrefix = strPathAndPrefix.substr(nIndexOfPrefix + 1);
@@ -45,10 +47,10 @@ Log::Log(const char* pPathAndPrefix)
 	m_pNoticeFileHandler = fopen(strNoticeLogFile.data(), "a");
 	m_pWarningFileHandler = fopen(strWarningLogFile.data(), "a");
 	m_pDebugFileHandler = fopen(strDebugLogFile.data(), "a");
+
 	if(!m_pNoticeFileHandler || !m_pWarningFileHandler || !m_pDebugFileHandler)
 	{
-		cout << "Target file path of log is unavailable, please check!" << endl;
-		exit(-1);
+		throw string("Target file path of log is unavailable, please check!");
 	}
 
 	string strNoticeSymbolicName = strPrefix + string(".log.notice.") + strCurrentTime;
@@ -69,14 +71,14 @@ void Log::build_symbolic_link(const char* pSrcFile, const char* pDestFile)
 Log* Log::pGlobalLogInstance = NULL;
 pthread_mutex_t Log::m_mutexLock = PTHREAD_MUTEX_INITIALIZER;
 
-Log* Log::get_log_instance(const char* pPathAndPrefix)
+Log* Log::get_log_instance(const char* pPathAndPrefix, bool isPrint)
 {
 	if(pGlobalLogInstance == NULL)
 	{
 		pthread_mutex_lock(&m_mutexLock);
 		if(pGlobalLogInstance == NULL)
 		{
-			pGlobalLogInstance = new Log(pPathAndPrefix);
+			pGlobalLogInstance = new Log(pPathAndPrefix, isPrint);
 		}
 		pthread_mutex_unlock(&m_mutexLock);
 	}
@@ -90,14 +92,15 @@ Log::~Log()
 	fclose(m_pDebugFileHandler);
 	pthread_mutex_destroy(&m_mutexLock);
 	delete pGlobalLogInstance;
+	pGlobalLogInstance = NULL;
 }
 
-void Log::log(const char* pLevel, const char* pMsg, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine, int nExpr)
+void Log::log(const char* pLevel, const char* pMsg, unsigned int nTid, 
+		      const char* pFileName, const char* pFuncName, int nLine, int nExpr)
 {
 	if(pGlobalLogInstance == NULL)
 	{
-		cout << "The log has not been initialized and please initialize it first. " << endl;
-		exit(-1);
+		throw string("ERROR: Target file path of log is unavailable, please check!");
 	}
 
 	if(!nExpr)
@@ -117,10 +120,10 @@ void Log::log(const char* pLevel, const char* pMsg, unsigned int nTid, const cha
 		sprintf(pTmpTip, "No such a level of log named `%s`.", pLevel);
 		pGlobalLogInstance->warning(pTmpTip, nTid, pFileName, pFuncName, nLine);
 	}
-
 }
 
-void Log::notice(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine)
+void Log::notice(const char* pContent, unsigned int nTid, const char* pFileName, 
+				 const char* pFuncName, int nLine)
 {
 	string strInfoMsg = get_format_msg(NOTICE, pContent, nTid, pFileName, pFileName, nLine);
 	pthread_mutex_lock(&m_mutexLock);
@@ -129,7 +132,8 @@ void Log::notice(const char* pContent, unsigned int nTid, const char* pFileName,
 	pthread_mutex_unlock(&m_mutexLock);
 }
 
-void Log::warning(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine)
+void Log::warning(const char* pContent, unsigned int nTid, const char* pFileName, 
+				  const char* pFuncName, int nLine)
 {
 	string strInfoMsg = get_format_msg(WARNING, pContent, nTid, pFileName, pFileName, nLine);
 	pthread_mutex_lock(&m_mutexLock);
@@ -138,7 +142,8 @@ void Log::warning(const char* pContent, unsigned int nTid, const char* pFileName
 	pthread_mutex_unlock(&m_mutexLock);
 }
 
-void Log::fatal(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine)
+void Log::fatal(const char* pContent, unsigned int nTid, const char* pFileName, 
+				const char* pFuncName, int nLine)
 {
 	string strInfoMsg = get_format_msg(FATAL, pContent, nTid, pFileName, pFileName, nLine);
 	pthread_mutex_lock(&m_mutexLock);
@@ -147,7 +152,8 @@ void Log::fatal(const char* pContent, unsigned int nTid, const char* pFileName, 
 	pthread_mutex_unlock(&m_mutexLock);
 }
 
-void Log::debug(const char* pContent, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine)
+void Log::debug(const char* pContent, unsigned int nTid, const char* pFileName, 
+		 	    const char* pFuncName, int nLine)
 {
 	string strInfoMsg = get_format_msg(DEBUG, pContent, nTid, pFileName, pFileName, nLine);
 	pthread_mutex_lock(&m_mutexLock);
@@ -177,7 +183,8 @@ string Log::get_current_time(int nType)
 	return this->m_strCurrentTime;
 }
 
-string Log::get_format_msg(const char* pLevel, const char* pMsg, unsigned int nTid, const char* pFileName, const char* pFuncName, int nLine)
+string Log::get_format_msg(const char* pLevel, const char* pMsg, unsigned int nTid, 
+						   const char* pFileName, const char* pFuncName, int nLine)
 {
 	char szBufLine[8] = {0};
 	char szBufTid[16] = {0};
@@ -189,7 +196,10 @@ string Log::get_format_msg(const char* pLevel, const char* pMsg, unsigned int nT
 	strMsg += string("] [func:") + string(pFuncName) + string("] [line:") + string(szBufLine);
 	strMsg += string("]\nMSG:") + string(pMsg);
 	strMsg += string("\n\n");
-	cout << strMsg;
+
+	if(m_bPrint == true)
+		cout << strMsg;
+
 	return strMsg;		
 }
 
